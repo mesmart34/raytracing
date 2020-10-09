@@ -1,5 +1,8 @@
 #pragma once
 
+
+#include "glm/glm.hpp"
+#include "glm/vec2.hpp"
 #include <cstdlib>
 #include "SDL2\SDL.h"
 #include <vector>
@@ -9,6 +12,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace glm;
 
 #define internal static
 #define global static
@@ -28,10 +32,6 @@ typedef double f64;
 #define internal static
 #define global static
 
-struct v3
-{
-    f32 x, y, z;
-};
 
 struct material
 {
@@ -41,7 +41,7 @@ struct material
 struct sphere
 {
     sphere() = default;
-    v3 pos;
+    vec3 pos;
     f32 r;
     material mat;
 };
@@ -49,7 +49,7 @@ struct sphere
 struct scene
 {
     vector<sphere> spheres;
-    v3 camera_pos;
+    vec3 camera_pos;
 };
 
 void init();

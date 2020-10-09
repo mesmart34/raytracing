@@ -1,7 +1,6 @@
-#include "ray.h",
+#include "ray.h"
 
 
-using namespace std;
 
 global SDL_Window* window;
 global SDL_Renderer* renderer;
@@ -13,9 +12,9 @@ const global int fov = 90;
 
 void init();
 void render(const scene& scn);
-internal u32 cast_ray(const scene& scn, v3 pos, v3 dir);
-internal v3 vec3_norm(const v3& v);
-internal bool sphere_intersect(const sphere& sph, const v3& start, const v3& dir);
+internal u32 cast_ray(const scene& scn, vec3 pos, vec3 dir);
+internal vec3 vec3_norm(const vec3& v);
+internal bool sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir);
 
 void
 init()
@@ -43,8 +42,8 @@ render(const scene& scn)
             float dir_y = -(y + 0.5) + height / 2;
             float dir_z = -height / (2.0f * tanf(fov / 2));
             
-            v3 pos = scn.camera_pos;
-            v3 dir = vec3_norm(v3{dir_x, dir_y, dir_z});
+            vec3 pos = scn.camera_pos;
+            vec3 dir = vec3_norm(vec3(dir_x, dir_y, dir_z));
             
             u32 color = cast_ray(scn, pos, dir);
             
@@ -58,26 +57,47 @@ render(const scene& scn)
     SDL_RenderPresent(renderer);
 }
 
-internal v3
-vec3_norm(const v3& v)
+internal vec3
+vec3_norm(const vec3& v)
 {
     auto l = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    return v3{v.x / l, v.y / l, v.z / l};
+    return vec3{v.x / l, v.y / l, v.z / l};
 }
 
 internal float
-vec3_mult(const v3& a, const v3& b)
+vec3_mult(const vec3& a, const vec3& b)
 {
     float res = a.x * b.x + a.y * b.y + a.z * b.z;
     return res;
 }
 
+#if 0 
+
 internal bool
-sphere_intersect(const sphere& sph, const v3& start, const v3& dir)
+sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
 {
-    v3 L = {
-        sph.pos.x - start.x, sph.pos.y - start.y
-    };
+    vec3 o = sph.pos;
+    vec3 d = dir;
+    vec3 oc = o - start;
+    float b = 2 * dot(oc, d);
+    float c = dot(oc, oc) - sph.r;
+    float disc = b*b - 4*c;
+    if(disc < 0) return false;
+    else {
+        disc = sqrt(disc);
+        float t0 = -b - disc;
+        float t1 = -b + disc;
+        float t = (t0 < t1) ? t0 : t1;
+        return true;
+    }
+}
+
+#else
+
+internal bool
+sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
+{
+    vec3 L = sph.pos - start;
     f32 tca = vec3_mult(L, dir);
     f32 m1 = vec3_mult(L, L);
     f32 m2 = tca * tca;
@@ -93,8 +113,15 @@ sphere_intersect(const sphere& sph, const v3& start, const v3& dir)
     return true;
 }
 
+#endif
+internal float 
+distance(const vec3& a, const vec3& b)
+{
+    return sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+}
+
 internal u32 
-cast_ray(const scene& scn, v3 pos, v3 dir)
+cast_ray(const scene& scn, vec3 pos, vec3 dir)
 {
     const f32 max = FLT_MAX;
     u32 color = 0x252525;
@@ -105,6 +132,7 @@ cast_ray(const scene& scn, v3 pos, v3 dir)
         if(sphere_intersect(sph, pos, dir))
         {
             color = sph.mat.color;
+            
         }
     }
     
