@@ -6,8 +6,8 @@ global SDL_Window* window;
 global SDL_Renderer* renderer;
 global SDL_Texture* screen_texture;
 
-const global int width = 800;
-const global int height = 600;
+const global int width = 640;
+const global int height = 480;
 const global int fov = 90;
 
 void init();
@@ -43,7 +43,8 @@ render(const scene& scn)
             float dir_z = -height / (2.0f * tanf(fov / 2));
             
             vec3 pos = scn.camera_pos;
-            vec3 dir = vec3_norm(vec3(dir_x, dir_y, dir_z));
+            
+            vec3 dir = normalize(vec3(dir_x, dir_y, dir_z));
             
             u32 color = cast_ray(scn, pos, dir);
             
@@ -57,24 +58,11 @@ render(const scene& scn)
     SDL_RenderPresent(renderer);
 }
 
-internal vec3
-vec3_norm(const vec3& v)
-{
-    auto l = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    return vec3{v.x / l, v.y / l, v.z / l};
-}
 
-internal float
-vec3_mult(const vec3& a, const vec3& b)
-{
-    float res = a.x * b.x + a.y * b.y + a.z * b.z;
-    return res;
-}
-
-#if 0 
+#if 1 
 
 internal bool
-sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
+sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir, float& hit_distance)
 {
     vec3 o = sph.pos;
     vec3 d = dir;
@@ -85,6 +73,7 @@ sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
     if(disc < 0) return false;
     else {
         disc = sqrt(disc);
+        hit_distance = disc;
         float t0 = -b - disc;
         float t1 = -b + disc;
         float t = (t0 < t1) ? t0 : t1;
@@ -95,7 +84,7 @@ sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
 #else
 
 internal bool
-sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir)
+sphere_intersect(const sphere& sph, const vec3& start, const vec3& dir, float& hit_distance)
 {
     vec3 L = sph.pos - start;
     f32 tca = vec3_mult(L, dir);
@@ -123,18 +112,20 @@ distance(const vec3& a, const vec3& b)
 internal u32 
 cast_ray(const scene& scn, vec3 pos, vec3 dir)
 {
-    const f32 max = FLT_MAX;
     u32 color = 0x252525;
-    f32 hit_distance = max;
+    f32 hit_distance = FLT_MAX;
     for(u32 i = 0; i < scn.spheres.size(); i++)
     {
+        float dist = 0.0f;
         sphere sph = scn.spheres[i];
-        if(sphere_intersect(sph, pos, dir))
+        if(sphere_intersect(sph, pos, dir, dist))
         {
-            color = sph.mat.color;
-            
+            if(dist < hit_distance)
+            {
+                hit_distance = dist;
+                color = sph.mat.color;
+            }
         }
     }
-    
     return color;
 }

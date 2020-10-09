@@ -21,10 +21,11 @@ auto main(int argc, char** argv) -> int {
     //scn.spheres.push_back(Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
     //scn.spheres.push_back(Sphere(Vec3f( 7,    5,   -18), 4,     mirror));
     
-    render(scn);
     bool interrupted = false;
     while(!interrupted)
     {
+        render(scn);
+        scn.camera_pos.z -= 0.1f;
         SDL_Event event;
         while(SDL_PollEvent(&event))
         {
@@ -39,6 +40,7 @@ auto main(int argc, char** argv) -> int {
                 }
             }
         }
+        SDL_Delay(1000.0f/60.0f);
     }
     
     return 0;
