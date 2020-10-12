@@ -19,11 +19,7 @@ internal bool sphere_intersect(const sphere& sph, const vec3& start, const vec3&
 void
 init()
 {
-    SDL_Init(SDL_INIT_EVERYTHING);
-    window = SDL_CreateWindow("Raytracing", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    screen_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
-    SDL_RenderSetLogicalSize(renderer, width, height);
+    
 }
 
 void 
@@ -110,22 +106,18 @@ distance(const vec3& a, const vec3& b)
 }
 
 internal u32 
-cast_ray(const scene& scn, vec3 pos, vec3 dir)
+cast_ray(vec3 pos, vec3 dir)
 {
     u32 color = 0x252525;
     f32 hit_distance = FLT_MAX;
     for(u32 i = 0; i < scn.spheres.size(); i++)
     {
-        float dist = 0.0f;
         sphere sph = scn.spheres[i];
-        if(sphere_intersect(sph, pos, dir, dist))
+        if(sphere_intersect(sph, pos, dir, hit_distance))
         {
-            if(dist < hit_distance)
-            {
-                hit_distance = dist;
-                color = sph.mat.color;
-            }
+            color = sph.mat.color;
         }
     }
+    
     return color;
 }
